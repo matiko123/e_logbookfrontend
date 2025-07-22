@@ -490,67 +490,66 @@ xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" cl
     const axiosInstance = axios.create({
         baseURL: process.env.VUE_APP_API_BASE_URL
     });
- const store = useStore();
- const today = ref('');
- const student = ref('');
+    const store = useStore();
+    const today = ref('');
+    const student = ref('');
 
- const closeModal = () => {
-      competence.value= false
-     competence_form.value=false
-      document.getElementById('dismiss2').click()
-      document.getElementById('dismiss').click()
-     studentCompetences.value = ['']
- }
- const setDataModal = async (data)  => {
-   await fetchStudentCompetences(data.id);
-    student.value = data;
-}
-
- const setFinalDataModal = async (data)  => {
-     student.value = data;
-    await fetchStudentCompetences(data.id);
-}
-
-const loading = ref(false);
-const submitCompetenceForm = async () => {
-  loading.value=true;
-  try {
-    const userId = student.value?.id
-
-    if (!userId) {
-      throw new Error('User ID is missing.')
+    const closeModal = () => {
+        competence.value= false
+        competence_form.value=false
+        document.getElementById('dismiss2').click()
+        document.getElementById('dismiss').click()
+        studentCompetences.value = ['']
+    }
+    
+    const setDataModal = async (data)  => {
+        await fetchStudentCompetences(data.id);
+        student.value = data;
     }
 
-    const selectedCompetences = competences.value.filter(c => c.status)
-
-    if (selectedCompetences.length === 0) {
-      showError('Please select a status for at least one competence.')
-      return
+    const setFinalDataModal = async (data)  => {
+        student.value = data;
+        await fetchStudentCompetences(data.id);
     }
 
-    for (const competence of selectedCompetences) {
-      const payload = {
-        user_id: userId,
-        competence_id: competence.id,
-        status: competence.status
-      }
+    const loading = ref(false);
+    const submitCompetenceForm = async () => {
+        loading.value=true;
+        try {
+            const userId = student.value?.id
 
-      await axiosInstance.post('/user-competences', payload)
+            if (!userId) {
+                throw new Error('User ID is missing.')
+            }
+
+            const selectedCompetences = competences.value.filter(c => c.status)
+
+            if (selectedCompetences.length === 0) {
+                showError('Please select a status for at least one competence.')
+                return
+            }
+
+            for (const competence of selectedCompetences) {
+                const payload = {
+                    user_id: userId,
+                    competence_id: competence.id,
+                    status: competence.status
+                }
+
+                await axiosInstance.post('/user-competences', payload)
+            }
+            fetchStudentCompetences(userId);
+            showMessage('Competence data submitted successfully.');
+            loading.value=false;
+        } catch (error) {
+            console.error('Submission error:', error)
+            showError(error.response?.data?.message || error.message)
+        }
     }
-    fetchStudentCompetences(userId);
-    showMessage('Competence data submitted successfully.');
-    // document.getElementById('close').click();
-    loading.value=false;
-  } catch (error) {
-    console.error('Submission error:', error)
-    showError(error.response?.data?.message || error.message)
-  }
-}
-
 
     const getUsers = () => {
-         axiosInstance.get(`supervisor-students?supervisor_id=${user_id}`).
-         then((response) => {
+        axiosInstance.get(`supervisor-students?supervisor_id=${user_id}`).
+        then((response) => {
             items.value = response.data
             .map((item, index) => ({
                 ...item,
@@ -559,150 +558,179 @@ const submitCompetenceForm = async () => {
                 User_ID: item.id,
                 Username: item.name,
                 Email: item.email,
-                
             }));
             loading_spinner.value = false;
-                 locking.value = 0;
+            locking.value = 0;
         });
     };
 
     const competences = ref(['']);
     const fetchCompetences = () => {
-         axiosInstance.get('/competences').
-         then((response) => {
+        axiosInstance.get('/competences').
+        then((response) => {
             competences.value = response.data
         });
     };
 
+    const competence = ref(false);
+    const competence_form = ref(false)
+    const studentCompetences = ref(['']);
+    const fetchStudentCompetences = async (id) => {
+        axiosInstance.get(`/user-competences?student_id=${id}`)
+        .then((response) => {
+            studentCompetences.value = response.data;
+            if (studentCompetences.value.length > 0) {
+                competence.value = true;
+                competence_form.value = false;
+            } else {
+                competence.value = false;
+                competence_form.value = true;
+            }
+        });
+    };
 
-
-     const competence = ref(false);
-     const competence_form = ref(false)
-      const studentCompetences = ref(['']);
-const fetchStudentCompetences = async (id) => {
-    axiosInstance.get(`/user-competences?student_id=${id}`)
-    .then((response) => {
-        studentCompetences.value = response.data;
-        if (studentCompetences.value.length > 0) {
-            competence.value = true;
-            competence_form.value = false;
-        } else {
-            competence.value = false;
-            competence_form.value = true;
-        }
-    });
-};
-
-const locking = ref(0);
+    const locking = ref(0);
     const unlockLogbook = (id) => {
         locking.value = id;
-    const newItemData = {
-       status: "unlocked",
-};
-           axiosInstance
-               .put(`/users/${id}`, newItemData)
-               .then((response) => {
-                   getUsers();
-                   showMessage('Logbook Opened for Today');
-               })
-               .catch((error) => {
-                showError("Error code : "+ error.status);
-                console.log(error);
-               });
-                  
-       };
-
-       
-    const lockLogbook = (id) => {
-           locking.value = id;
-    const newItemData = {
-       status: "locked",
-};
-           axiosInstance
-               .put(`/users/${id}`, newItemData)
-               .then((response) => {
-                   showMessage('Logbook CLosed ');
+        const newItemData = {
+            status: "unlocked",
+        };
+        axiosInstance
+            .put(`/users/${id}`, newItemData)
+            .then((response) => {
                 getUsers();
-               })
-               .catch((error) => {
+                showMessage('Logbook Opened for Today');
+            })
+            .catch((error) => {
                 showError("Error code : "+ error.status);
                 console.log(error);
-               });
-                
-       };
+            });
+    };
+
+    const lockLogbook = (id) => {
+        locking.value = id;
+        const newItemData = {
+            status: "locked",
+        };
+        axiosInstance
+            .put(`/users/${id}`, newItemData)
+            .then((response) => {
+                showMessage('Logbook Closed');
+                getUsers();
+            })
+            .catch((error) => {
+                showError("Error code : "+ error.status);
+                console.log(error);
+            });
+    };
 
     const review= ref(''); 
     const grade= ref(''); 
     const addReview = (id) => {
-      locking.value=1;
-    const newItemData = {
-       review : review.value,
-       visitation_status: status.value,
-       visitor_id : user_id,
-       reading_notification : 'visited',
-       visitation_date : new Date().toISOString().split('T')[0] 
-};
-           axiosInstance
-               .put(`/users/${id}`, newItemData)
-               .then((response) => {
-                showMessage('Review Submitted ');
+        locking.value=1;
+        const newItemData = {
+            review : review.value,
+            visitation_status: status.value,
+            visitor_id : user_id,
+            reading_notification : 'visited',
+            visitation_date : new Date().toISOString().split('T')[0] 
+        };
+        axiosInstance
+            .put(`/users/${id}`, newItemData)
+            .then((response) => {
+                showMessage('Review Submitted');
                 getUsers();
                 review.value='';
                 status.value='';
                 document.getElementById('dismiss').click();
-               })
-               .catch((error) => {
+            })
+            .catch((error) => {
                 showError("Error code : "+ error.status);
                 console.log(error);
-               }); 
-       };
+            }); 
+    };
 
-         const unique_visitor_options = ref(null);
+    const unique_visitor_options = ref(null);
     const unique_visitor_series = ref([
         { name: 'Weeks', data: [] },
         { name: 'Days', data: [] },
     ]);
 
-    // Initialize options in onMounted or create a function to generate them
-const initChartOptions = () => {
-    const is_dark = store.state.is_dark_mode;
-    return {
-        chart: { toolbar: { show: false } },
-        dataLabels: { enabled: false },
-        stroke: { show: true, width: 2, colors: ['transparent'] },
-        colors: ['#5c1ac3', '#ffbb44'],
-        dropShadow: { enabled: true, opacity: 0.3, blur: 1, left: 1, top: 1, color: '#515365' },
-        plotOptions: { bar: { horizontal: false, columnWidth: '20%', borderRadius: 10 } },
-        legend: { position: 'bottom', horizontalAlign: 'center', fontSize: '14px', markers: { width: 12, height: 12 }, itemMargin: { horizontal: 0, vertical: 8 } },
-        grid: { borderColor: is_dark ? '#191e3a' : '#e0e6ed' },
-        xaxis: {
-            categories: [],
-            axisBorder: { show: true, color: is_dark ? '#3b3f5c' : '#e0e6ed' },
-        },
-        yaxis: {
-            min: 0,
-            forceNiceScale: false,
-            labels: {
-                formatter: function(val) {
-                    return parseInt(val); // Fuck decimals
+    const initChartOptions = () => {
+        const is_dark = store.state.is_dark_mode;
+        return {
+            chart: { 
+                toolbar: { show: false },
+                type: 'bar',
+                height: 350
+            },
+            dataLabels: { enabled: false },
+            stroke: { show: true, width: 2, colors: ['transparent'] },
+            colors: ['#5c1ac3', '#ffbb44'],
+            dropShadow: { enabled: true, opacity: 0.3, blur: 1, left: 1, top: 1, color: '#515365' },
+            plotOptions: { 
+                bar: { 
+                    horizontal: false, 
+                    columnWidth: '20%', 
+                    borderRadius: 10,
+                    endingShape: 'rounded'
+                } 
+            },
+            legend: { 
+                position: 'bottom', 
+                horizontalAlign: 'center', 
+                fontSize: '14px', 
+                markers: { width: 12, height: 12 }, 
+                itemMargin: { horizontal: 0, vertical: 8 } 
+            },
+            grid: { 
+                borderColor: is_dark ? '#191e3a' : '#e0e6ed',
+                strokeDashArray: 5
+            },
+            xaxis: {
+                categories: [],
+                axisBorder: { 
+                    show: true, 
+                    color: is_dark ? '#3b3f5c' : '#e0e6ed' 
+                },
+                axisTicks: {
+                    show: true,
+                    color: is_dark ? '#3b3f5c' : '#e0e6ed'
                 }
             },
-            tickAmount: 4 // Shows 0,1,2,3,4,5
-        },
-        fill: {
-            type: 'gradient',
-            gradient: { shade: is_dark ? 'dark' : 'light', type: 'vertical', shadeIntensity: 0.3, inverseColors: false, opacityFrom: 1, opacityTo: 0.8, stops: [0, 100] },
-        },
-        tooltip: {
-            theme: is_dark ? 'dark' : 'light',
-            y: {
-                formatter: function (val) {
-                    return val; // Keep tooltip values as-is
+            yaxis: {
+                min: 0,
+                forceNiceScale: true,
+                labels: {
+                    formatter: function(val) {
+                        return parseInt(val);
+                    }
+                },
+                tickAmount: 4,
+                max: 4
+            },
+            fill: {
+                type: 'gradient',
+                gradient: { 
+                    shade: is_dark ? 'dark' : 'light', 
+                    type: 'vertical', 
+                    shadeIntensity: 0.3, 
+                    inverseColors: false, 
+                    opacityFrom: 1, 
+                    opacityTo: 0.8, 
+                    stops: [0, 100] 
                 },
             },
-        },
+            tooltip: {
+                theme: is_dark ? 'dark' : 'light',
+                y: {
+                    formatter: function (val) {
+                        return val;
+                    },
+                },
+            },
+        };
     };
-};
 
     const getAnalysis = () => {
         axiosInstance.get(`/analysis?supervisor_id=${user_id}`)
@@ -714,13 +742,11 @@ const initChartOptions = () => {
                     const weeksData = raw.map(item => item.weeks);
                     const daysData = raw.map(item => item.days);
 
-                    // Update series data
                     unique_visitor_series.value = [
                         { name: 'Weeks', data: weeksData },
                         { name: 'Days', data: daysData },
                     ];
 
-                    // Update options with new categories
                     unique_visitor_options.value = {
                         ...initChartOptions(),
                         xaxis: {
@@ -737,8 +763,6 @@ const initChartOptions = () => {
                 console.error('API error:', error);
             });
     };
-
-
 
     onMounted(() => {
         loading_spinner.value = true;

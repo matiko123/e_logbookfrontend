@@ -664,46 +664,81 @@ const locking = ref(0);
     ]);
 
     // Initialize options in onMounted or create a function to generate them
-const initChartOptions = () => {
-    const is_dark = store.state.is_dark_mode;
-    return {
-        chart: { toolbar: { show: false } },
-        dataLabels: { enabled: false },
-        stroke: { show: true, width: 2, colors: ['transparent'] },
-        colors: ['#5c1ac3', '#ffbb44'],
-        dropShadow: { enabled: true, opacity: 0.3, blur: 1, left: 1, top: 1, color: '#515365' },
-        plotOptions: { bar: { horizontal: false, columnWidth: '20%', borderRadius: 10 } },
-        legend: { position: 'bottom', horizontalAlign: 'center', fontSize: '14px', markers: { width: 12, height: 12 }, itemMargin: { horizontal: 0, vertical: 8 } },
-        grid: { borderColor: is_dark ? '#191e3a' : '#e0e6ed' },
-        xaxis: {
-            categories: [],
-            axisBorder: { show: true, color: is_dark ? '#3b3f5c' : '#e0e6ed' },
-        },
-        yaxis: {
-            min: 0,
-            forceNiceScale: false,
-            labels: {
-                formatter: function(val) {
-                    return parseInt(val); // Fuck decimals
+    const initChartOptions = () => {
+        const is_dark = store.state.is_dark_mode;
+        return {
+            chart: { 
+                toolbar: { show: false },
+                type: 'bar',
+                height: 350
+            },
+            dataLabels: { enabled: false },
+            stroke: { show: true, width: 2, colors: ['transparent'] },
+            colors: ['#5c1ac3', '#ffbb44'],
+            dropShadow: { enabled: true, opacity: 0.3, blur: 1, left: 1, top: 1, color: '#515365' },
+            plotOptions: { 
+                bar: { 
+                    horizontal: false, 
+                    columnWidth: '20%', 
+                    borderRadius: 10,
+                    endingShape: 'rounded'
+                } 
+            },
+            legend: { 
+                position: 'bottom', 
+                horizontalAlign: 'center', 
+                fontSize: '14px', 
+                markers: { width: 12, height: 12 }, 
+                itemMargin: { horizontal: 0, vertical: 8 } 
+            },
+            grid: { 
+                borderColor: is_dark ? '#191e3a' : '#e0e6ed',
+                strokeDashArray: 5
+            },
+            xaxis: {
+                categories: [],
+                axisBorder: { 
+                    show: true, 
+                    color: is_dark ? '#3b3f5c' : '#e0e6ed' 
+                },
+                axisTicks: {
+                    show: true,
+                    color: is_dark ? '#3b3f5c' : '#e0e6ed'
                 }
             },
-            tickAmount: 4 // Shows 0,1,2,3,4,5
-        },
-        fill: {
-            type: 'gradient',
-            gradient: { shade: is_dark ? 'dark' : 'light', type: 'vertical', shadeIntensity: 0.3, inverseColors: false, opacityFrom: 1, opacityTo: 0.8, stops: [0, 100] },
-        },
-        tooltip: {
-            theme: is_dark ? 'dark' : 'light',
-            y: {
-                formatter: function (val) {
-                    return val; // Keep tooltip values as-is
+            yaxis: {
+                min: 0,
+                forceNiceScale: true,
+                labels: {
+                    formatter: function(val) {
+                        return parseInt(val);
+                    }
+                },
+                tickAmount: 4,
+                max: 4
+            },
+            fill: {
+                type: 'gradient',
+                gradient: { 
+                    shade: is_dark ? 'dark' : 'light', 
+                    type: 'vertical', 
+                    shadeIntensity: 0.3, 
+                    inverseColors: false, 
+                    opacityFrom: 1, 
+                    opacityTo: 0.8, 
+                    stops: [0, 100] 
                 },
             },
-        },
+            tooltip: {
+                theme: is_dark ? 'dark' : 'light',
+                y: {
+                    formatter: function (val) {
+                        return val;
+                    },
+                },
+            },
+        };
     };
-};
-
     const getAnalysis = () => {
         axiosInstance.get(`/analysis`)
             .then((response) => {
