@@ -47,11 +47,16 @@ const routes = [
     },
 
       {
-        path: '/users',
-        name: 'users',
+        path: '/users/students',
+        name: 'users-students',
         component: () => import(/* webpackChunkName: "components-tabs" */ '../views/users/students.vue'),
     },
 
+      {
+        path: '/users/supervisors',
+        name: 'users-supervisors',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/users/supervisors.vue'),
+    },
        {
         path: '/user/profile',
         name: 'user-profile',
@@ -96,6 +101,18 @@ const routes = [
         path: '/settings/role-permissions',
         name: 'settings-role-permissions',
         component: () => import(/* webpackChunkName: "components-tabs" */ '../views/settings/rolePermissions.vue'),
+    },
+
+     {
+        path: '/settings/assumptions',
+        name: 'settings-assumptions',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/settings/assumptions.vue'),
+    },
+
+      {
+        path: '/students/all',
+        name: 'all-students',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/users/all_students.vue'),
     },
 
    

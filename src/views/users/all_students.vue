@@ -549,7 +549,7 @@ const submitCompetenceForm = async () => {
 
 
     const getUsers = () => {
-         axiosInstance.get(`supervisor-students?supervisor_id=${user_id}`).
+         axiosInstance.get(`all-students`).
          then((response) => {
             items.value = response.data
             .map((item, index) => ({
@@ -705,7 +705,7 @@ const initChartOptions = () => {
 };
 
     const getAnalysis = () => {
-        axiosInstance.get(`/analysis?supervisor_id=${user_id}`)
+        axiosInstance.get(`/analysis`)
             .then((response) => {
                 if (response.data) {
                     const raw = response.data;

@@ -78,14 +78,15 @@
                                     </div>
                                     <div class="d-sm-flex justify-content-between">
                                         <div class="field-wrapper">
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" class="btn text-white" style="background-color:#175883"
+                                                :disabled="loading_spinner">
                                                 <div v-if="loading_spinner" class="d-flex flex-column align-items-center">
                                                     
-                                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                        <!-- <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> -->
                                                         Please wait ...
                                                 </div>
                                                
-                                                <div v-else>Log In</div>
+                                                <div v-else>SIGN IN</div>
                                             </button>
                                         </div>
                                     </div>                                     
@@ -142,12 +143,15 @@
           // Storing token and user details in local storage
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('user', JSON.stringify(response.data.user));
-          if(user.value === 'Organization Supervisor' || user.value === 'Host Supervisor'){
-            router.push("/users");
+          if(user.value === 'Host Supervisor'){
+            router.push("/users/students");
           } if(user.value === 'Student'){
             router.push("/weeks");
           } if(user.value === 'Administrator'){
             router.push("/settings/role-permissions");
+          } 
+          if(user.value === 'Organization Supervisor' ){
+            router.push("/students/all");
           } 
 
         //   setTimeout(() => {

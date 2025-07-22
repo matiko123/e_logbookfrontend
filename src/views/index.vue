@@ -1,5 +1,5 @@
 <template>
-    <div class="layout-px-spacing dash_1">
+    <div class="layout-px-spacing dash_2">
         <teleport to="#breadcrumb">
             <ul class="navbar-nav flex-row">
                 <li>
@@ -14,145 +14,129 @@
                 </li>
             </ul>
 
-            <ul class="navbar-nav flex-row ms-auto">
-                <li class="nav-item more-dropdown">
-                    <div class="dropdown custom-dropdown-icon">
-                        <a href="javascript:;" class="nav-link dropdown-toggle" id="ddlSettings" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span>Settings</span>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="feather feather-chevron-down"
-                            >
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="ddlSettings">
-                            <li><a class="dropdown-item" data-value="Settings" href="javascript:void(0);">Settings</a></li>
-                            <li><a class="dropdown-item" data-value="Mail" href="javascript:void(0);">Mail</a></li>
-                            <li><a class="dropdown-item" data-value="Print" href="javascript:void(0);">Print</a></li>
-                            <li><a class="dropdown-item" data-value="Download" href="javascript:void(0);">Download</a></li>
-                            <li><a class="dropdown-item" data-value="Share" href="javascript:void(0);">Share</a></li>
-                        </ul>
-                    </div>
-                </li>
-            </ul>
         </teleport>
 
         <div class="row layout-top-spacing">
-
-    
-
-            
-            <router-link to="/jobcards" class=" col-xl-3 col-lg-12 col-md-12 col-sm-12 col-12 layout-spacing">
-                <div class="border-success  card widget widget-top-selling-products">
-                    <div class="widget-content mt-3">
-                        <h5 >Job Cards</h5>
+   
+            <!-- my graph starts -->
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 layout-spacing">
+                <div class="widget widget-unique-visitors">
+                    <div class="widget-heading">
+                        <h5>Students Performance Analysis</h5>
+                   
                     </div>
-                    <div class="widget-content table-responsive">
-                        <h2><v-f-number ref="counter" :start-val="0" :end-val=openJobCards :duration="7000" /></h2>
-                    </div>
-                </div>
-            </router-link>
 
-
-            <Router-link to="/orders" class=" col-xl-3 col-lg-12 col-md-12 col-sm-12 col-12 layout-spacing">
-                <div class="border-primary card widget widget-top-selling-products">
-                    <div class="widget-content mt-3">
-                        <h3>LPO's</h3>
-                    </div>
-                    <div class="widget-content table-responsive">
-                        <h2><v-f-number ref="counter" :start-val="0" :end-val=purchaseOrderCard :duration="7000" /></h2>
+                    <div class="widget-content">
+                        <apex-chart v-if="unique_visitor_options" height="350" type="bar" :options="unique_visitor_options" :series="unique_visitor_series"></apex-chart>
                     </div>
                 </div>
-            </Router-link>
+            </div>
+         <!-- my graph ends -->
+        
+      
 
-            <router-link to="/bulk-statements" class=" col-xl-3 col-lg-12 col-md-12 col-sm-12 col-12 layout-spacing">
-                <div class="border-dark card widget widget-top-selling-products">
-                    <div class="widget-content mt-3">
-                        <h5>Total Bulks</h5>
-                    </div>
-                    <div class="widget-content table-responsive">
-                        <h2><v-f-number ref="counter" :start-val="0" :end-val=bulkCard :duration="7000" /></h2>
-                    </div>
-                </div>
-            </router-link>
+         
 
-
+       
         </div>
     </div>
 </template>
-
 <script setup>
     import '@/assets/sass/widgets/widgets.scss';
-    import { ref } from 'vue';
-    import { useMeta } from '@/composables/use-meta';
-    import { VFNumber } from 'vue-animation-counter';
-    import '@/assets/sass/scrollspyNav.scss';
-    import '@/assets/sass/components/custom-counter.scss';
-
-    useMeta({ title: 'Counter' });
-
+    import { computed, ref, onMounted } from 'vue';
+    import { useStore } from 'vuex';
+    import ApexChart from 'vue3-apexcharts';
     import axios from 'axios';
-
-    // Create axios instance with the base URL
+    import { useMeta } from '@/composables/use-meta';
+    
+    useMeta({ title: 'Widgets' });
     const axiosInstance = axios.create({
         baseURL: process.env.VUE_APP_API_BASE_URL
     });
+    const store = useStore();
 
-    // Declare refs for data
-    const openJobCards = ref(0);
-    const purchaseOrderCard = ref(0);
-    const bulkCard = ref(0);
+    // Make options a ref instead of computed
+    const unique_visitor_options = ref(null);
+    const unique_visitor_series = ref([
+        { name: 'Weeks', data: [] },
+        { name: 'Days', data: [] },
+    ]);
 
-    // Fetch open job cards
-    axiosInstance.get('/open-job-card')
-        .then(response => {
-            openJobCards.value = response.data.open_jobcards;
-        })
-        .catch(error => {
-            console.error('Error fetching open job cards:', error);
-        });
+    // Initialize options in onMounted or create a function to generate them
+const initChartOptions = () => {
+    const is_dark = store.state.is_dark_mode;
+    return {
+        chart: { toolbar: { show: false } },
+        dataLabels: { enabled: false },
+        stroke: { show: true, width: 2, colors: ['transparent'] },
+        colors: ['#5c1ac3', '#ffbb44'],
+        dropShadow: { enabled: true, opacity: 0.3, blur: 1, left: 1, top: 1, color: '#515365' },
+        plotOptions: { bar: { horizontal: false, columnWidth: '20%', borderRadius: 10 } },
+        legend: { position: 'bottom', horizontalAlign: 'center', fontSize: '14px', markers: { width: 12, height: 12 }, itemMargin: { horizontal: 0, vertical: 8 } },
+        grid: { borderColor: is_dark ? '#191e3a' : '#e0e6ed' },
+        xaxis: {
+            categories: [],
+            axisBorder: { show: true, color: is_dark ? '#3b3f5c' : '#e0e6ed' },
+        },
+        yaxis: {
+            tickAmount: 6,
+            labels: {
+                formatter: function(val) {
+                    return Math.round(val); // Rounds to nearest integer
+                }
+            },
+            forceNiceScale: true
+        },
+        fill: {
+            type: 'gradient',
+            gradient: { shade: is_dark ? 'dark' : 'light', type: 'vertical', shadeIntensity: 0.3, inverseColors: false, opacityFrom: 1, opacityTo: 0.8, stops: [0, 100] },
+        },
+        tooltip: {
+            theme: is_dark ? 'dark' : 'light',
+            y: {
+                formatter: function (val) {
+                    return val; // Keep original value in tooltip
+                },
+            },
+        },
+    };
+};
+    const getAnalysis = () => {
+        axiosInstance.get(`/analysis`)
+            .then((response) => {
+                if (response.data) {
+                    const raw = response.data;
 
-    // Fetch purchase order count
-    axiosInstance.get('/purchase-order-count')
-        .then(response => {
-            purchaseOrderCard.value = response.data.purchase_order_count;
-        })
-        .catch(error => {
-            console.error('Error fetching purchase order count:', error);
-        });
+                    const categories = raw.map(item => item.name);
+                    const weeksData = raw.map(item => item.weeks);
+                    const daysData = raw.map(item => item.days);
 
-    // Fetch bulk count
-    axiosInstance.get('/bulk-count')
-        .then(response => {
-            bulkCard.value = response.data.bulk_count;
-        })
-        .catch(error => {
-            console.error('Error fetching bulk count:', error);
-        });
+                    // Update series data
+                    unique_visitor_series.value = [
+                        { name: 'Weeks', data: weeksData },
+                        { name: 'Days', data: daysData },
+                    ];
 
+                    // Update options with new categories
+                    unique_visitor_options.value = {
+                        ...initChartOptions(),
+                        xaxis: {
+                            ...initChartOptions().xaxis,
+                            categories: categories
+                        }
+                    };
+        
+                } else {
+                    console.error('Error fetching analysis data:', response.data);
+                }
+            })
+            .catch(error => {
+                console.error('API error:', error);
+            });
+    };
+
+    onMounted(() => {
+        unique_visitor_options.value = initChartOptions();
+        getAnalysis();
+    });
 </script>
-
-<style>
-body{
-    background-color:white!important;
-}
-.card {
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  cursor:pointer;
-}
-</style>

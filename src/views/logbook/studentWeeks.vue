@@ -204,7 +204,7 @@
   <div class="row g-3">
     <div class="col-12">
       <div class="card shadow rounded-4 p-3">
-        <h5 class="mb-2 text-primary">Description</h5>
+        <h5 class="mb-2 text-primary text-start">Supervisor's Reviews</h5>
         <p class="mb-0 text-muted text-start">
          {{student.remarks}}
         </p>

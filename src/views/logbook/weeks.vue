@@ -33,17 +33,20 @@
 
         <!-- weeks card starts -->
          <div v-else class="row">
-              <!-- notification badge starts -->
+              <!-- visitation notification badge starts -->
        <div v-if="user.notification && notification" class="container py-5">
     <div class="card p-4">
       <div class="close-badge"  @click="notification = false">&times;</div>
 
       <div class="d-flex align-items-center mb-3">
         <div class="green-dot"></div>
-        <h5 class="mb-0">Attendance Notification</h5>
+        <h5 class="mb-0">Visitation Notification</h5>
       </div>
 
-      <div class="d-flex align-items-start">
+      <div class="d-flex align-items-start"
+                  data-bs-toggle="modal" 
+            data-bs-target="#review_modal"
+      >
      <svg class="svg-icon" fill="#28a745" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
   <path d="M13.485 1.929a1 1 0 0 1 0 1.414L6.414 10.414l-3.9-3.9a1 1 0 0 1 1.414-1.414l2.486 2.486 6.071-6.071a1 1 0 0 1 1.414 0z"/>
 </svg>
@@ -51,14 +54,50 @@
         <div>
           <p class="mb-1 fw-bold">Dear {{ user.name }}</p>
           <p class="mb-1">
-            Your Logbook has been attended by <strong>Supervisor Abc Supervisor</strong> on <strong>Date bla bla bla</strong>.
+            Your Logbook has been attended by <strong>Supervisor {{ user.visitor.name }}</strong> on <strong>{{ user.visitation_date }}</strong>.
           </p>
-          <p class="text-success fw-semibold mb-0">✔ Success & Completion</p>
+          <p class="text-success fw-semibold mb-0"
+          >✔ View Assessment</p>
         </div>
       </div>
     </div>
       </div>
-     <!-- notification badge ends -->
+     <!--visitation notification badge ends -->
+          <!--completion assessment notification badge starts -->
+       <div v-if="competence" class="container py-5">
+    <div class="card p-4">
+      <div class="close-badge"  @click="competence = false">&times;</div>
+<div
+  data-bs-toggle="modal" 
+  data-bs-target="#final_review_modal"
+>
+   <div class="d-flex align-items-center mb-3">
+        <div class="green-dot"></div>
+        <h5 class="mb-0">Completion Assessment Notification</h5>
+      </div>
+
+      <div class="d-flex align-items-start"
+
+      >
+     <svg class="svg-icon" fill="#28a745" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path d="M13.485 1.929a1 1 0 0 1 0 1.414L6.414 10.414l-3.9-3.9a1 1 0 0 1 1.414-1.414l2.486 2.486 6.071-6.071a1 1 0 0 1 1.414 0z"/>
+</svg>
+
+        <div>
+          <p class="mb-1 fw-bold">Dear {{ user.name }}</p>
+          <p class="mb-1">
+            You have been assessed by your Office supervisor from your working Department  on <strong>{{ assessment_date }}</strong>.
+          </p>
+          <p class="text-success fw-semibold mb-0"
+            data-bs-toggle="modal" 
+            data-bs-target="#final_review_modal"
+          >✔ View Assessment</p>
+        </div>
+      </div>
+</div>
+    </div>
+      </div>
+     <!--attendance notification badge ends -->
     <div v-for="week,i in items" class="col-md-4 mb-4">
         <!-- active card starts-->
   <div  class="card border-0 shadow-lg h-100 overflow-hidden">
@@ -66,8 +105,19 @@
     <div class="card-header py-3 text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="mb-0 font-weight-bold text-white">
-          <i class="fas fa-calendar-week me-2"></i>Weekly Report
+          <i class="fas fa-calendar-week me-2"></i>Weekly Report 
         </h5>
+                <span
+                v-if="week.remarks"
+                @click="prepareModalData(week)"
+                 data-bs-toggle="modal" 
+                 data-bs-target="#week_review"
+                class="badge bg-white text-primary rounded-pill px-3 py-2 shadow-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16">
+  <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+  <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2"/>
+</svg>
+        </span>
         <span class="badge bg-white text-primary rounded-pill px-3 py-2 shadow-sm">
           Week <span id="weekNumber" class="fw-bold">  {{  i + 1 }}</span>
         </span>
@@ -373,6 +423,153 @@
 
          <!-- weeks card ends  -->
     </div>
+
+           <!-- final review modal starts -->
+               <div class="modal fade mymodal" id="final_review_modal" data-bs-backdrop="false" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5 " id="staticBackdropLabel">Student's Final Review</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="dismiss2"></button>
+      </div>
+      <div class="container">
+        <div class="d-flex">
+            <div >{{ today_date }}</div>
+           <div class="ms-auto">{{ today }}</div>
+        </div>
+      </div>
+      
+
+
+<div >
+
+  <div v-if="competence" >
+   <div class="table-responsive container">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+         <th>#</th>
+        <th>Competence</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="competence,i in competences" :key="competence.id">
+        <td>{{ i + 1 }}</td>
+        <td>{{ competence.competence.description }}</td>
+        <td>{{ competence.status }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+  </div>
+    <div v-else>
+  <div class="modal-body">
+    <div class="card text-center border-danger">
+      <div class="card-body">
+        <h5 class="card-title text-danger">No Completion Record</h5>
+        <p class="card-text">There is currently no field completion record made for this student.</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"  aria-label="Close">
+      Close
+    </button>
+</div>
+  </div>
+
+
+</div>    
+    </div>
+  </div>
+               </div>
+        <!-- final review modal ends -->
+
+               <!--visiting supervisor review modal starts -->
+       <div class="modal fade mymodal" id="review_modal" data-bs-backdrop="false" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5 " id="staticBackdropLabel">Student's Review</h1>
+        <button type="button" class="btn-close"
+         data-bs-dismiss="modal" aria-label="Close" id="dismiss"
+        ></button>
+      </div>
+      <div class="container">
+        <div class="d-flex">
+            <div >{{ today_date }}</div>
+           <div class="ms-auto">{{ today }}</div>
+        </div>
+      </div>
+      
+
+<div >
+  <div class="modal-body">
+    <div class="row">
+       <div class="col-md-3">
+        <label class="form-control">Student : {{ user.name }}</label>
+       </div>
+       <div class="col-md-3">
+           <label class="form-control">Email : {{ user.email }}</label>
+       </div>
+        <div class="col-md-3">
+            <label class="form-control">Student was {{ user.visitation_status }}</label>          
+       </div>
+          <div class="col-md-3">
+      <label class="form-control">Date: {{ user.visitation_date }}</label>
+       </div>
+       <div v-if="user.review" class="col-md-12">
+        <label class="form-control">Visitor's Review : {{ user.review }}</label>
+       </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">
+      Close
+    </button>
+  </div>
+</div>
+    
+    </div>
+  </div>
+</div>
+       <!-- visiting supervisor review modal ends -->
+        <!-- week completion review starts -->
+         <div class="modal fade mymodal" id="week_review" data-bs-backdrop="false" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1  class="modal-title fs-5 " id="staticBackdropLabel">Weekly Review</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="dismiss"></button>
+      </div>
+      <div class="container"> 
+        <div class="d-flex">
+            <div >Date Filled </div>
+           <div class="ms-auto">{{ student.date_filled }}</div>
+        </div>
+      </div>
+      
+      
+    <div class="container my-4">
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card shadow rounded-4 p-3">
+       <h5 class="mb-2 text-primary text-start">Supervisor's Reviews</h5>
+        <p class="mb-0 text-muted text-start">
+         {{student.remarks}}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+     
+    
+    </div>
+  </div>
+</div>
+         <!-- week completion review ends -->
 </template>
 <style>
     .table3 .actions svg {
@@ -391,7 +588,7 @@
     const showMessage = inject('showMessage');
     const showError = inject('showError'); 
     const user_id = JSON.parse(localStorage.getItem("user")).id;
-     const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem("user"));
     const loading_spinner = ref(false);
     const notification = ref(true)
     const items = ref(['']);
@@ -400,8 +597,10 @@
         baseURL: process.env.VUE_APP_API_BASE_URL
     });
 
-
-
+   const student = ref('')
+   const prepareModalData = (data) =>{
+    student.value = data
+   }
 
     const getWeeks = () => {
         loading_spinner.value = true;
@@ -414,6 +613,7 @@
                 User_ID: item.id,
                 Username: item.name,
                 Email: item.email,
+                date_filled : formatDate(item.created_at)
                 
             }));
             loading_spinner.value = false;
@@ -437,10 +637,50 @@
                 loading.value = false;
             });
     }
+   
+    const competences = ref([])
+    const competence = ref(false)
+   const assessment_date = ref('');
+
+
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  // const yy = String(date.getFullYear()).slice(-2);
+  const yy = String(date.getFullYear());
+  const HH = String(date.getHours()).padStart(2, '0');
+  const ii = String(date.getMinutes()).padStart(2, '0');
+  // return `${dd}-${mm}-${yy} Time : ${HH}:${ii}`;
+  return `${dd}-${mm}-${yy}`;
+};
+
+
+const fetchCompetences = async () => {
+  axiosInstance.get(`/user-competences?student_id=${user_id}`)
+    .then((response) => {
+      competences.value = response.data;
+
+      if (competences.value.length > 0) {
+        competence.value = true;
+
+        // Get the latest created_at (assuming they are not ordered)
+        const latest = competences.value.reduce((latest, item) => {
+          return new Date(item.created_at) > new Date(latest.created_at) ? item : latest;
+        });
+
+        assessment_date.value = formatDate(latest.created_at);
+      }
+
+      console.log('competences', competences.value);
+    });
+};
+
 
 
     onMounted(() => {
         getWeeks();
+        fetchCompetences()
     });
 </script>
 
@@ -481,4 +721,9 @@
       justify-content: center;
       cursor: pointer;
     }
+
+ .mymodal{
+  background-color: rgba(122, 122, 122, 0.653);
+ }
+
 </style>
